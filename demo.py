@@ -23,33 +23,37 @@
 
 import os
 import flask
+from flask_cors import CORS
 
 import pywps
 from pywps import Service
 
-from processes.sleep import Sleep
-from processes.ultimate_question import UltimateQuestion
-from processes.centroids import Centroids
+# from processes.sleep import Sleep
+# from processes.ultimate_question import UltimateQuestion
+# from processes.centroids import Centroids
 from processes.sayhello import SayHello
-from processes.feature_count import FeatureCount
-from processes.buffer import Buffer
-from processes.area import Area
-from processes.bboxinout import Box
-from processes.jsonprocess import TestJson
+# from processes.feature_count import FeatureCount
+# from processes.buffer import Buffer
+# from processes.area import Area
+# from processes.bboxinout import Box
+# from processes.jsonprocess import TestJson
 
 
 app = flask.Flask(__name__)
 
+CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 processes = [
-    FeatureCount(),
+    # FeatureCount(),
     SayHello(),
-    Centroids(),
-    UltimateQuestion(),
-    Sleep(),
-    Buffer(),
-    Area(),
-    Box(),
-    TestJson()
+    # Centroids(),
+    # UltimateQuestion(),
+    # Sleep(),
+    # Buffer(),
+    # Area(),
+    # Box(),
+    # TestJson()
 ]
 
 # For the process list on the home page
