@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
 # Copyright (c) 2016 PyWPS Project Steering Committee
-# 
-# 
+#
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,15 +28,8 @@ from flask_cors import CORS
 import pywps
 from pywps import Service
 
-# from processes.sleep import Sleep
-# from processes.ultimate_question import UltimateQuestion
-# from processes.centroids import Centroids
 from processes.sayhello import SayHello
-# from processes.feature_count import FeatureCount
-# from processes.buffer import Buffer
-# from processes.area import Area
-# from processes.bboxinout import Box
-# from processes.jsonprocess import TestJson
+from processes.grassbuffer import GrassBuffer
 
 
 app = flask.Flask(__name__)
@@ -45,19 +38,11 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 processes = [
-    # FeatureCount(),
     SayHello(),
-    # Centroids(),
-    # UltimateQuestion(),
-    # Sleep(),
-    # Buffer(),
-    # Area(),
-    # Box(),
-    # TestJson()
+    GrassBuffer()
 ]
 
 # For the process list on the home page
-
 process_descriptor = {}
 for process in processes:
     abstract = process.abstract
@@ -79,11 +64,10 @@ def hello():
 
 @app.route('/wps', methods=['GET', 'POST'])
 def wps():
-
     return service
 
 
-@app.route('/outputs/'+'<path:filename>')
+@app.route('/outputs/<path:filename>')
 def outputfile(filename):
     targetfile = os.path.join('outputs', filename)
     if os.path.isfile(targetfile):
@@ -98,7 +82,7 @@ def outputfile(filename):
         flask.abort(404)
 
 
-@app.route('/static/'+'<path:filename>')
+@app.route('/static/<path:filename>')
 def staticfile(filename):
     targetfile = os.path.join('static', filename)
     if os.path.isfile(targetfile):
@@ -123,10 +107,10 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--daemon',
                         action='store_true', help="run in daemon mode")
     parser.add_argument('-a','--all-addresses',
-                        action='store_true', help="run flask using IPv4 0.0.0.0 (all network interfaces),"  +  
-                            "otherwise bind to 127.0.0.1 (localhost).  This maybe necessary in systems that only run Flask") 
+                        action='store_true', help="run flask using IPv4 0.0.0.0 (all network interfaces),"  +
+                            "otherwise bind to 127.0.0.1 (localhost).  This maybe necessary in systems that only run Flask")
     args = parser.parse_args()
-    
+
     if args.all_addresses:
         bind_host='0.0.0.0'
     else:
