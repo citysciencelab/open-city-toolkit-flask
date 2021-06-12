@@ -1,5 +1,10 @@
 FROM python:3.9
 
+# Install GRASS GIS
+RUN apt-get update
+RUN apt-get install -y grass-core
+
+# Install PyWPS server
 WORKDIR /pywps-flask
 
 COPY requirements.txt .
@@ -12,7 +17,6 @@ COPY demo.py .
 COPY pywps.cfg .
 
 RUN mkdir logs
-RUN mkdir outputs
 RUN mkdir workdir
 
-CMD ["python", "demo.py", "-a"]
+CMD grass -f grass/global/PERMANENT --exec python demo.py -a
