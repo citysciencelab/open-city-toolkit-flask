@@ -29,6 +29,7 @@ import pywps
 from pywps import Service
 
 from processes.sayhello import SayHello
+from processes.set_resolution import SetResolution
 from processes.grassbuffer import GrassBuffer
 
 
@@ -39,6 +40,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 processes = [
     SayHello(),
+    SetResolution(),
     GrassBuffer()
 ]
 
