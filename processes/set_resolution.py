@@ -1,3 +1,5 @@
+import os
+
 from pywps import Process, LiteralInput
 
 
@@ -16,8 +18,9 @@ class SetResolution(Process):
 
     def _handler(self, request, response):
         resolution = request.inputs['resolution'][0].data
+        outfile = os.path.join(os.environ.get('GRASS_DIR'), 'variables/resolution')
 
-        with open('grass/variables/resolution', 'w') as writer:
+        with open(outfile, 'w') as writer:
             writer.write(str(resolution) + '\n')
 
-        return 'OK'
+        return response

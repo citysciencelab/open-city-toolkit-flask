@@ -24,13 +24,14 @@
 import os
 import flask
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 
 import pywps
 from pywps import Service
 
 from processes.sayhello import SayHello
+from processes.set_basemap import SetBasemap
 from processes.set_resolution import SetResolution
-from processes.grassbuffer import GrassBuffer
 
 
 app = flask.Flask(__name__)
@@ -40,8 +41,8 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 processes = [
     SayHello(),
-    SetResolution(),
-    GrassBuffer()
+    SetBasemap(),
+    SetResolution()
 ]
 
 # For the process list on the home page
@@ -94,6 +95,23 @@ def staticfile(filename):
         return flask.Response(file_bytes, content_type=mime_type)
     else:
         flask.abort(404)
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    # check if the post request has the file part
+    if 'file' not in flask.request.files:
+        raise Exception('No file part')
+    file = flask.request.files['file']
+    # If the user does not select a file, the browser submits an
+    # empty file without a filename.
+    if file.filename == '':
+        raise Exception('No selected file')
+
+    filename = secure_filename(file.filename)
+    file.save(os.path.join('/pywps-flask/upload_tmp', filename))
+    return filename
+
 
 if __name__ == "__main__":
     import argparse

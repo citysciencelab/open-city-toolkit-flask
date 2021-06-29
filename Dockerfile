@@ -18,5 +18,6 @@ COPY pywps.cfg .
 
 RUN mkdir logs
 RUN mkdir workdir
+RUN mkdir upload_tmp
 
 CMD grass -f grass/global/PERMANENT --exec python demo.py -a
