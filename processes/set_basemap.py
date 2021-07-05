@@ -6,6 +6,9 @@ from grass.pygrass.modules import Module
 import pywps
 from pywps import Process, LiteralInput, LiteralOutput
 
+from geoserver import GeoServer
+
+geoserver = GeoServer()
 
 class SetBasemap(Process):
     def __init__(self):
@@ -29,7 +32,7 @@ class SetBasemap(Process):
 
     def _handler(self, request, response):
         tmpdir = pywps.configuration.get_config_value("server", "tmpdir")
-        outputdir = pywps.configuration.get_config_value("server", "outputpath")
+        outputdir = pywps.configuration.get_config_value("server", "geoserverdir")
 
         infile = os.path.join(tmpdir, request.inputs['filename'][0].data)
 
@@ -54,6 +57,12 @@ class SetBasemap(Process):
         v_out_ogr(format='GPKG', input='lines_osm', output=os.path.join(outputdir, "lines.gpkg"), overwrite=True)
         v_out_ogr(format='GPKG', input='polygons_osm', output=os.path.join(outputdir, "polygons.gpkg"), overwrite=True)
         v_out_ogr(format='GPKG', input='location_bbox', output=os.path.join(outputdir, "location_bbox.gpkg"), overwrite=True)
+
+        # create datastores in GeoServer
+        geoserver.create_datastore(name="basemap_points", path="points.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(name="basemap_lines", path="lines.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(name="basemap_polygons", path="polygons.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(name="basemap_bbox", path="location_bbox.gpkg", workspace="vector", overwrite=True)
 
         response.outputs['center_east'].data = east
         response.outputs['center_north'].data = north

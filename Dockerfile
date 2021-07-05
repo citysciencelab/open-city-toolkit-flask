@@ -14,6 +14,7 @@ COPY processes processes
 COPY static static
 COPY templates templates
 COPY demo.py .
+COPY geoserver.py .
 COPY pywps.cfg .
 
 RUN mkdir logs
