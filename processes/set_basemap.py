@@ -64,6 +64,8 @@ class SetBasemap(Process):
         geoserver.create_datastore(name="basemap_polygons", path="polygons.gpkg", workspace="vector", overwrite=True)
         geoserver.create_datastore(name="basemap_bbox", path="location_bbox.gpkg", workspace="vector", overwrite=True)
 
+        # TODO: featurestores
+
         response.outputs['center_east'].data = east
         response.outputs['center_north'].data = north
         return response

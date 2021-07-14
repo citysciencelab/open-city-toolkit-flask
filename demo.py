@@ -32,6 +32,7 @@ from pywps import Service
 from processes.sayhello import SayHello
 from processes.set_basemap import SetBasemap
 from processes.set_resolution import SetResolution
+from processes.set_selection import SetSelection
 
 
 app = flask.Flask(__name__)
@@ -42,7 +43,8 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 processes = [
     SayHello(),
     SetBasemap(),
-    SetResolution()
+    SetResolution(),
+    SetSelection()
 ]
 
 # For the process list on the home page
