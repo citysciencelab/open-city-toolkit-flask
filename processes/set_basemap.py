@@ -10,6 +10,7 @@ from geoserver import GeoServer
 
 geoserver = GeoServer()
 
+
 class SetBasemap(Process):
     def __init__(self):
         inputs = [
@@ -32,7 +33,8 @@ class SetBasemap(Process):
 
     def _handler(self, request, response):
         tmpdir = pywps.configuration.get_config_value("server", "tmpdir")
-        outputdir = pywps.configuration.get_config_value("server", "geoserverdir")
+        datadir = os.path.join(
+            pywps.configuration.get_config_value("server", "geoserverdir"), "data")
 
         infile = os.path.join(tmpdir, request.inputs['filename'][0].data)
 
@@ -47,22 +49,32 @@ class SetBasemap(Process):
         v_in_ogr(input=infile, layer='multipolygons', output='polygons_osm', overwrite=True)
 
         # determine the bbox and center coordinate from polygon layer boundary
-        region = g_region(vector='polygons_osm', flags='cg', stdout_=PIPE).outputs.stdout.decode('utf-8')
+        region = g_region(
+            vector='polygons_osm', flags='cg', stdout_=PIPE).outputs.stdout.decode('utf-8')
         v_in_region(output='location_bbox', overwrite=True)
 
         east, north = [float(s.split('=')[1]) for s in region.strip().split('\n')]
 
         # export GPKG files
-        v_out_ogr(format='GPKG', input='points_osm', output=os.path.join(outputdir, "points.gpkg"), overwrite=True)
-        v_out_ogr(format='GPKG', input='lines_osm', output=os.path.join(outputdir, "lines.gpkg"), overwrite=True)
-        v_out_ogr(format='GPKG', input='polygons_osm', output=os.path.join(outputdir, "polygons.gpkg"), overwrite=True)
-        v_out_ogr(format='GPKG', input='location_bbox', output=os.path.join(outputdir, "location_bbox.gpkg"), overwrite=True)
+        v_out_ogr(format='GPKG', input='points_osm', output=f"{datadir}/points.gpkg",
+                  overwrite=True)
+        v_out_ogr(format='GPKG', input='lines_osm', output=f"{datadir}/lines.gpkg",
+                  overwrite=True)
+        v_out_ogr(format='GPKG', input='polygons_osm', output=f"{datadir}/polygons.gpkg",
+                  overwrite=True)
+        v_out_ogr(format='GPKG', input='location_bbox', output=f"{datadir}/location_bbox.gpkg",
+                  overwrite=True)
 
         # create datastores in GeoServer
-        geoserver.create_datastore(name="basemap_points", path="points.gpkg", workspace="vector", overwrite=True)
-        geoserver.create_datastore(name="basemap_lines", path="lines.gpkg", workspace="vector", overwrite=True)
-        geoserver.create_datastore(name="basemap_polygons", path="polygons.gpkg", workspace="vector", overwrite=True)
-        geoserver.create_datastore(name="basemap_bbox", path="location_bbox.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(
+            name="basemap_points", path="data/points.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(
+            name="basemap_lines", path="data/lines.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(
+            name="basemap_polygons", path="data/polygons.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(
+            name="basemap_bbox", path="data/location_bbox.gpkg", workspace="vector",
+            overwrite=True)
 
         # TODO: featurestores
 

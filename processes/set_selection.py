@@ -10,10 +10,12 @@ from geoserver import GeoServer
 
 geoserver = GeoServer()
 
+
 class SetSelection(Process):
     def __init__(self):
         inputs = [
-            ComplexInput('selection', 'Selection polygon', supported_formats=[Format('application/json')])
+            ComplexInput('selection', 'Selection polygon',
+                         supported_formats=[Format('application/json')])
         ]
         outputs = [
             LiteralOutput('center_east', 'Center coordinate (East)', data_type='float'),
@@ -32,7 +34,8 @@ class SetSelection(Process):
 
     def _handler(self, request, response):
         tmpdir = pywps.configuration.get_config_value("server", "tmpdir")
-        outputdir = pywps.configuration.get_config_value("server", "geoserverdir")
+        datadir = os.path.join(
+            pywps.configuration.get_config_value("server", "geoserverdir"), "data")
 
         infile = os.path.join(tmpdir, 'selection.json')
 
@@ -55,15 +58,18 @@ class SetSelection(Process):
         v_clip(input='polygons_osm', clip='selection', output='polygons', overwrite=True)
 
         # determine the center coordinate of the selection
-        region = g_region(vector='selection', flags='cg', stdout_=PIPE).outputs.stdout.decode('utf-8')
+        region = g_region(
+            vector='selection', flags='cg', stdout_=PIPE).outputs.stdout.decode('utf-8')
 
         east, north = [float(s.split('=')[1]) for s in region.strip().split('\n')]
 
         # export GPKG files
-        v_out_ogr(format='GPKG', input='selection', output=os.path.join(outputdir, "selection.gpkg"), overwrite=True)
+        v_out_ogr(format='GPKG', input='selection', output=f"{datadir}/selection.gpkg",
+                  overwrite=True)
 
         # create datastores in GeoServer
-        geoserver.create_datastore(name="selection", path="selection.gpkg", workspace="vector", overwrite=True)
+        geoserver.create_datastore(
+            name="selection", path="data/selection.gpkg", workspace="vector", overwrite=True)
 
         # TODO: featurestores
 

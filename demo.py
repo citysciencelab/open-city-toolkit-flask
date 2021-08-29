@@ -130,15 +130,17 @@ if __name__ == "__main__":
         )
     parser.add_argument('-d', '--daemon',
                         action='store_true', help="run in daemon mode")
-    parser.add_argument('-a','--all-addresses',
-                        action='store_true', help="run flask using IPv4 0.0.0.0 (all network interfaces),"  +
-                            "otherwise bind to 127.0.0.1 (localhost).  This maybe necessary in systems that only run Flask")
+    parser.add_argument('-a', '--all-addresses',
+                        action='store_true',
+                        help="run flask using IPv4 0.0.0.0 (all network interfaces), " +
+                        "otherwise bind to 127.0.0.1 (localhost). This may be necessary " +
+                        "in systems that only run Flask")
     args = parser.parse_args()
 
     if args.all_addresses:
-        bind_host='0.0.0.0'
+        bind_host = '0.0.0.0'
     else:
-        bind_host='127.0.0.1'
+        bind_host = '127.0.0.1'
 
     if args.daemon:
         pid = None
@@ -149,8 +151,8 @@ if __name__ == "__main__":
 
         if (pid == 0):
             os.setsid()
-            app.run(threaded=True,host=bind_host)
+            app.run(threaded=True, host=bind_host)
         else:
             os._exit(0)
     else:
-        app.run(threaded=True,host=bind_host)
+        app.run(threaded=True, host=bind_host)
