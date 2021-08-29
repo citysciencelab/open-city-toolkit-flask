@@ -29,6 +29,7 @@ from werkzeug.utils import secure_filename
 import pywps
 from pywps import Service
 
+from processes.get_layers import GetLayers
 from processes.sayhello import SayHello
 from processes.set_basemap import SetBasemap
 from processes.set_resolution import SetResolution
@@ -41,6 +42,7 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 processes = [
+    GetLayers(),
     SayHello(),
     SetBasemap(),
     SetResolution(),

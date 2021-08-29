@@ -35,6 +35,14 @@ class GeoServer:
         self.username = os.environ.get('GEOSERVER_USERNAME')
         self.password = os.environ.get('GEOSERVER_PASSWORD')
 
+    def get_layers(self, workspace: str = None):
+        """
+        Get all the layers from geoserver
+        If workspace is None, it will listout all the layers from geoserver
+        """
+        url = "/layers" if workspace is None else f"/workspaces/{workspace}/layers"
+        return self.get(url)
+
     def create_datastore(self,
                          name: str,
                          path: str,
@@ -79,6 +87,13 @@ class GeoServer:
 
         return "Data store created/updated successfully"
 
+    def get(self, route):
+        r = requests.get(f"{self.service_url}/rest" + route, auth=(self.username, self.password))
+
+        if r.status_code != 200:
+            raise Exception(r.text)
+
+        return r.text
 
     def post(self, url, data):
         headers = {"content-type": "text/xml"}
