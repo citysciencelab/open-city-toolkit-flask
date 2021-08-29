@@ -27,6 +27,7 @@ SOFTWARE.
 """
 import os
 import requests
+import json
 
 
 class GeoServer:
@@ -37,35 +38,22 @@ class GeoServer:
 
     def get_layers(self, workspace: str = None):
         """
-        Get all the layers from geoserver
-        If workspace is None, it will listout all the layers from geoserver
+        Get a list of layers.
+        https://docs.geoserver.org/latest/en/api/#1.0.0/layers.yaml
+
+        If workspace is None, it will list all the layers
         """
         url = "/layers" if workspace is None else f"/workspaces/{workspace}/layers"
         return self.get(url)
 
-    def create_datastore(self,
-                         name: str,
-                         path: str,
-                         dbtype: str = 'geopkg',
-                         workspace: str = None,
-                         overwrite: bool = False):
+    def create_datastore(self, name: str, path: str, dbtype: str = 'geopkg',
+                         workspace: str = None, overwrite: bool = False):
         """
-        Create a datastore within the GeoServer.
+        Create a data store.
+        https://docs.geoserver.org/latest/en/api/#1.0.0/datastores.yaml
 
-        Parameters
-        ----------
-        name : str
-            Name of datastore to be created.
-            After creating the datastore, you need to publish it by using publish_featurestore function.
-        path : str
-            Path to shapefile (.shp) file, GeoPackage (.gpkg) file, WFS url
-            (e.g. http://localhost:8080/geoserver/wfs?request=GetCapabilities) or directory containing shapefiles.
-        workspace : str, optional
-        overwrite : bool
-
-        Notes
-        -----
-        If you have PostGIS datastore, please use create_featurestore function
+        name : Name of datastore to be created.
+        path : Path to GeoPackage (.gpkg) file.
         """
         if workspace is None:
             workspace = "default"
@@ -73,15 +61,22 @@ class GeoServer:
         if path is None:
             raise Exception("You must provide a full path to the data")
 
-        params = f"<database>file:{path}</database><dbtype>{dbtype}</dbtype>"
-        data = f"<dataStore><name>{name}</name><connectionParameters>{params}</connectionParameters></dataStore>"
+        data = json.dumps({
+            'dataStore': {
+                'name': name,
+                'connectionParameters': {
+                    'database': f"file:{path}",
+                    'dbtype': dbtype
+                }
+            }
+        })
 
         try:
-            self.post(f"{self.service_url}/rest/workspaces/{workspace}/datastores", data)
+            self.post(f"/workspaces/{workspace}/datastores", data)
 
         except Exception as e:
             if overwrite:
-                self.put(f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}", data)
+                self.put(f"/workspaces/{workspace}/datastores/{name}", data)
             else:
                 raise e
 
@@ -95,17 +90,18 @@ class GeoServer:
 
         return r.text
 
-    def post(self, url, data):
-        headers = {"content-type": "text/xml"}
-        r = requests.post(url, data, auth=(self.username, self.password), headers=headers)
+    def post(self, route, data):
+        headers = {"content-type": "application/json"}
+        r = requests.post(f"{self.service_url}/rest" + route, data,
+                          auth=(self.username, self.password), headers=headers)
 
-        if r.status_code not in [200, 201]:
+        if r.status_code != 201:
             raise Exception(r.text)
 
+    def put(self, route, data):
+        headers = {"content-type": "application/json"}
+        r = requests.put(f"{self.service_url}/rest" + route, data,
+                         auth=(self.username, self.password), headers=headers)
 
-    def put(self, url, data):
-        headers = {"content-type": "text/xml"}
-        r = requests.put(url, data, auth=(self.username, self.password), headers=headers)
-
-        if r.status_code not in [200, 201]:
+        if r.status_code != 200:
             raise Exception(r.text)
