@@ -10,4 +10,4 @@ Shapely
 Werkzeug
 SQLAlchemy
 psutil
-git+https://github.com/geopython/pywps.git@main#egg=pywps
+pywps
