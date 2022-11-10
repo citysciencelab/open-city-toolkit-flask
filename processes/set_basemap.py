@@ -49,8 +49,7 @@ class SetBasemap(Process):
         v_in_ogr(input=infile, layer='multipolygons', output='polygons_osm', overwrite=True)
 
         # determine the bbox and center coordinate from polygon layer boundary
-        region = g_region(
-            vector='polygons_osm', flags='cg', stdout_=PIPE).outputs.stdout.decode('utf-8')
+        region = g_region(vector='polygons_osm', flags='cg', stdout_=PIPE).outputs.stdout
         v_in_region(output='location_bbox', overwrite=True)
 
         east, north = [float(s.split('=')[1]) for s in region.strip().split('\n')]
